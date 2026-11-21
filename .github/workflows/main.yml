@@ -1,34 +1,13 @@
-name: Gerar APK da IUE
-
-on:
-  workflow_dispatch:
-  push:
-    branches:
-      - main
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Baixar projeto
-        uses: actions/checkout@v4
-
-      - name: Configurar Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-
-      - name: Configurar Gradle
-        uses: gradle/actions/setup-gradle@v4
-
       - name: Gerar APK
-        run: chmod +x gradlew && ./gradlew assembleDebug
-
-      - name: Salvar APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: IUE-APK-debug
-          path: app/build/outputs/apk/debug/*.apk
-          
+        run: |
+          unzip -q IUE-Android-main.zip -d projeto
+          GRADLEW=$(find projeto -name gradlew -type f | head -n 1)
+          if [ -z "$GRADLEW" ]; then
+            echo "Arquivo gradlew não encontrado"
+            exit 1
+          fi
+          DIR=$(dirname "$GRADLEW")
+          cd "$DIR"
+          chmod +x gradlew
+          ./gradlew assembleDebug
+          cp app/build/outputs/apk/debug/*.apk "$GITHUB_WORKSPACE/"
